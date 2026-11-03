@@ -22,15 +22,19 @@ def _is_market_hours(now: datetime | None = None) -> bool:
     return current.weekday() < 5 and (current.hour, current.minute) >= (9, 15) and (current.hour, current.minute) <= (15, 30)
 
 
-def _is_recent(announcement: dict) -> bool:
+def _is_recent(announcement: dict, now: datetime | None = None) -> bool:
     try:
         published = pd.Timestamp(announcement.get("published"))
+        if pd.isna(published):
+            return False
         if published.tzinfo is None:
             published = published.tz_localize(IST)
         else:
             published = published.tz_convert(IST)
-        age_hours = (datetime.now(IST) - published).total_seconds() / 3600
-        return 0 <= age_hours <= 24
+        current = now or datetime.now(IST)
+        current = current.replace(tzinfo=IST) if current.tzinfo is None else current.astimezone(IST)
+        days_ago = (current.date() - published.date()).days
+        return 0 <= days_ago <= 2
     except (TypeError, ValueError):
         return False
 
@@ -61,7 +65,8 @@ def run_daily_digest(watchlist: list[dict[str, str]]) -> None:
 def start_scheduler(watchlist: list[dict[str, str]]) -> BackgroundScheduler:
     logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
     scheduler = BackgroundScheduler(timezone=IST, job_defaults={"coalesce": True, "max_instances": 1})
-    scheduler.add_job(run_market_cycle, "cron", args=[watchlist], day_of_week="mon-fri", hour="9-15", minute="*/15", id="market-cycle")
+    poll_minutes = max(1, int(os.getenv("MARKET_POLL_MINUTES", "5")))
+    scheduler.add_job(run_market_cycle, "cron", args=[watchlist], day_of_week="mon-fri", hour="9-15", minute=f"*/{poll_minutes}", id="market-cycle")
     scheduler.add_job(
         run_daily_digest, "cron", args=[watchlist], day_of_week="mon-fri",
         hour=int(os.getenv("DIGEST_HOUR_IST", "16")), minute=int(os.getenv("DIGEST_MINUTE_IST", "0")), id="daily-digest",

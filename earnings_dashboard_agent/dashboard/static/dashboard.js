@@ -64,4 +64,4 @@ $('#refresh').addEventListener('click', async () => {
   finally { window.setTimeout(() => { $('#refresh').disabled = false; }, 2000); }
 });
 loadStocks();
-window.setInterval(loadStocks, 60000);
+window.setInterval(loadStocks, 5 * 60 * 1000);
