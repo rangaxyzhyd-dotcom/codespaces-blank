@@ -1,0 +1,1 @@
+"""Data collection helpers for market prices and company announcements."""

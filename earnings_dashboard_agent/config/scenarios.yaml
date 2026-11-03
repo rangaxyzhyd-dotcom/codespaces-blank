@@ -1,0 +1,24 @@
+screening_thresholds:
+  strong_beat_pct: 10.0
+  moderate_beat_min_pct: 3.0
+  moderate_beat_max_pct: 10.0
+  in_line_abs_pct: 3.0
+  moderate_miss_min_pct: 3.0
+  moderate_miss_max_pct: 10.0
+  major_miss_pct: 10.0
+
+scenario_labels:
+  strong_beat: "Strong beat"
+  moderate_beat: "Moderate beat"
+  in_line: "In-line"
+  moderate_miss: "Moderate miss"
+  major_miss: "Major miss"
+  insufficient: "Mixed / insufficient evidence"
+
+screening_views:
+  strong_beat: "Positive, subject to valuation"
+  moderate_beat: "Mildly positive"
+  in_line: "Guidance and valuation dominate"
+  moderate_miss: "Selling pressure possible"
+  major_miss: "Higher downside risk"
+  insufficient: "Insufficient verified data for a screening view"

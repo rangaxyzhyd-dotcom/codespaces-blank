@@ -1,0 +1,1 @@
+"""Deterministic indicators and scenario calculations."""

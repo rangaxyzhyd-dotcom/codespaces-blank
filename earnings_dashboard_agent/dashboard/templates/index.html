@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>EarningsDashboardAgent</title><link rel="stylesheet" href="/static/dashboard.css"></head>
+<body>
+  <header class="masthead"><div class="mast-inner"><div><p class="eyebrow">India equities / results monitor</p><h1>EarningsDashboardAgent</h1></div><div class="mast-meta"><div>SCREENING THRESHOLDS · NOT RETURN PREDICTIONS</div><div id="last-updated">Loading snapshot…</div></div></div></header>
+  <main>
+    <div class="toolbar"><input id="search" type="search" placeholder="Filter by symbol or company" aria-label="Search stocks"><select id="priority-filter" aria-label="Filter by priority"><option value="">All priorities</option><option value="A">Priority A</option><option value="B">Priority B</option></select><select id="sort-filter" aria-label="Sort stocks"><option value="priority">Priority A first</option><option value="symbol">Sort by symbol</option><option value="company">Sort by company</option></select><span class="status" id="status">Loading watchlist…</span><span class="spacer"></span><button class="primary" id="refresh" type="button">Refresh sources</button><a href="/api/export.xlsx">Export Excel</a></div>
+    <div class="table-shell"><table><thead><tr><th>Symbol and company</th><th>Earnings announcement date</th><th>Previous-quarter revenue / EBITDA / PAT</th><th>Consensus revenue / EBITDA / PAT / EPS</th><th>Actual results</th><th>Surprise %</th><th>Previous four-quarter beat/miss history</th><th>Management guidance</th><th>Pre-results closing price</th><th>Post-results 1-day / 5-day return</th><th>Relative volume / RSI / ADX / session VWAP</th><th>Bullish/bearish reaction scenario</th><th>Final investment view</th></tr></thead><tbody id="stock-rows"><tr><td colspan="13">Loading configured companies…</td></tr></tbody></table></div>
+    <p class="footnote">Data availability varies by source. Retrieved values include source and observed time on hover; unavailable figures remain N/A. Research screening only, not financial advice.</p>
+  </main>
+  <script src="/static/dashboard.js" defer></script>
+</body>
+</html>

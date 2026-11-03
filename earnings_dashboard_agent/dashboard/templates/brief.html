@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Pre-earnings brief</title><link rel="stylesheet" href="/static/dashboard.css"></head>
+<body><main class="brief-layout">
+  <a class="back" href="/">← Watchlist</a>
+  <header class="brief-title"><p class="kicker">Pre-earnings research brief</p><h1 id="stock-heading">Loading stock…</h1><p class="source" id="stock-subheading"></p></header>
+  <div class="brief-grid" id="brief-grid"><section class="brief-section">Loading cited data…</section></div>
+  <p class="disclaimer">Model-generated commentary is constrained to retrieved facts shown here. Scenario labels are screening thresholds, not return predictions. This is not financial advice.</p>
+</main>
+<script>
+const escapeText = (value) => String(value ?? 'N/A').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shown = (entry) => entry && typeof entry === 'object' && Object.hasOwn(entry, 'value') ? entry.value : entry;
+const fact = (label, entry) => `<div class="fact"><span class="fact-label">${escapeText(label)}</span><span class="fact-value">${escapeText(shown(entry) ?? 'N/A')}</span><span class="source">${escapeText(entry?.source || '')}</span></div>`;
+const group = (title, items) => `<section class="brief-section"><h2>${escapeText(title)}</h2>${items.join('')}</section>`;
+async function loadBrief() {
+  const symbol = decodeURIComponent(location.pathname.split('/').pop()).toUpperCase();
+  const response = await fetch(`/api/stocks/${encodeURIComponent(symbol)}`);
+  if (!response.ok) { document.querySelector('#brief-grid').textContent = 'Stock not found in the configured watchlist.'; return; }
+  const stock = await response.json();
+  document.querySelector('#stock-heading').textContent = `${stock.exchange}:${stock.symbol} · ${stock.company}`;
+  document.querySelector('#stock-subheading').textContent = `Priority ${stock.priority} · Updated ${stock.updated_at || 'N/A'} · ${stock.sector_watch || ''}`;
+  const financials = stock.previous_quarter || {}, consensus = stock.consensus || {}, scenarios = stock.reaction_scenario || {};
+  const banks = stock.bank_metrics ? Object.entries(stock.bank_metrics).map(([key,value]) => fact(key.replaceAll('_',' '), value)) : [];
+  document.querySelector('#brief-grid').innerHTML = [
+    group('Consensus estimates', ['revenue','ebitda','pat','eps'].map(key => fact(key.toUpperCase(), consensus[key]))),
+    group('Previous-quarter key metrics', ['revenue','ebitda','pat'].map(key => fact(key.toUpperCase(), financials[key]))),
+    group('Verified results and surprise', [...Object.entries(stock.actual_results || {}).map(([key,value]) => fact(`Actual ${key}`,value)), ...Object.entries(stock.surprise_pct || {}).map(([key,value]) => fact(`${key} surprise %`,value))]),
+    group('Event context', [fact('Announcement date',stock.announcement_date),fact('Four-quarter beat/miss history',stock.beat_miss_history),fact('Management guidance',stock.guidance),fact('Sector watch item',stock.sector_watch),...banks]),
+    group('Reaction screening', [fact('Scenario label',scenarios.label),fact('Model commentary',scenarios.commentary),fact('Screening view',scenarios.view),fact('Interpretation',scenarios.basis),fact('Pre-results close',stock.pre_results_close),fact('Post-results 1-day return',stock.post_results_returns?.one_day),fact('Post-results 5-day return',stock.post_results_returns?.five_day)]),
+    group('Technical indicators', Object.entries(stock.technical || {}).filter(([key]) => ['relative_volume','rsi_14','adx_14','session_vwap'].includes(key)).map(([key,value]) => fact(key.replaceAll('_',' '),value))),
+    group('LLM investment view', [fact('View',stock.investment_view)]),
+    group('Recent announcements', (stock.announcements || []).slice(0,8).map(item => fact(item.published || 'Announcement',{value:item.title,source:item.source,observed_at:item.published}))),
+  ].join('');
+}
+loadBrief().catch(error => { document.querySelector('#brief-grid').textContent = `Could not load brief: ${error.message}`; });
+</script></body></html>
